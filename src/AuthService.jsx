@@ -30,11 +30,19 @@ export default function AuthService() {
         navigate('/dashboard');
     }
 
+    const logout = () => {
+        sessionStorage.clear();
+        navigate('/login');
+    }
+
+    const API_URL = "http://127.0.0.1:8000/api/";
+    //const API_URL = "https://book-author-api.softneedstack.online/api";
+
     const http = axios.create({
-        //baseURL:"https://book-author-api.softneedstack.online/api",
-        baseURL:"http://127.0.0.1:8000/api/",
+        baseURL:API_URL,
         headers:{
-            "Content-Type":"application/json"
+            "Content-Type":"application/json",
+            "Authorization":`Bearer ${token}`
         }
     });
     return {
@@ -42,6 +50,7 @@ export default function AuthService() {
         token,
         user,
         getToken,
-        http
+        http,
+        logout
     }
 }

@@ -2,23 +2,30 @@ import React, { Fragment } from 'react';
 import { Disclosure, Menu, Transition } from '@headlessui/react';
 import { Bars3Icon, BellIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { Routes, Route, Link } from 'react-router-dom';
-import Home from './components/Home';
-import Login from './components/Login';
-import Dashboard from './components/Dashboard';
-import Register from './components/Register';
+import Author from '../authors/Index';
+import Book from '../authors/Index';
+import Dashboard from '../components/Dashboard';
+import AuthService from '../AuthService';
 
 const navigation = [
-  { name: 'Home', href: '/', current: true },
   { name: 'Dashboard', href: '/dashboard', current: false },
-  { name: 'Login', href: '/login', current: false },
-  { name: 'Register', href: '/register', current: false },
+  { name: 'Authors', href: '/authors', current: false },
+  { name: 'Books', href: '/books', current: false },
 ];
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ');
 }
 
-function Guest() {
+function AuthenticatedLayout() {
+
+  const {token, logout} = AuthService();
+
+  const userLogout = () => {
+    if (token != undefined) {
+      logout();
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -64,16 +71,16 @@ function Guest() {
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
-                <button
-              type="button"
-              className="relative rounded-full bg-gray-800 p-1 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
-            >
-              <span className="absolute -inset-1.5" />
-              <span className="sr-only">View notifications</span>
-              <BellIcon aria-hidden="true" className="h-6 w-6" />
-            </button>
+                  <button
+                    type="button"
+                    className="relative rounded-full bg-gray-800 p-1 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
+                  >
+                    <span className="absolute -inset-1.5" />
+                    <span className="sr-only">View notifications</span>
+                    <BellIcon aria-hidden="true" className="h-6 w-6" />
+                  </button>
                   {/* Profile dropdown */}
                   <Menu as="div" className="relative ml-3">
                     <div>
@@ -124,15 +131,15 @@ function Guest() {
                         </Menu.Item>
                         <Menu.Item>
                           {({ active }) => (
-                            <Link
-                              to="#"
+                            <button
+                            onClick={userLogout}
                               className={classNames(
                                 active ? 'bg-gray-100' : '',
                                 'block px-4 py-2 text-sm text-gray-700'
                               )}
                             >
-                              Sign Out
-                            </Link>
+                              Logout
+                            </button>
                           )}
                         </Menu.Item>
                       </Menu.Items>
@@ -168,14 +175,13 @@ function Guest() {
 
       <main className="container mx-auto p-4">
         <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Login />} />
           <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/register" element={<Register />} />
+          <Route path="/authors" element={<Author />} />
+          <Route path="/books" element={<Book />} />
         </Routes>
       </main>
     </div>
   );
 }
 
-export default Guest;
+export default AuthenticatedLayout;
