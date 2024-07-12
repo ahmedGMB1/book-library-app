@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import AuthService from "../AuthService";
+import { toast } from 'react-toastify';
 
 export default function Register() {
 
@@ -11,13 +12,39 @@ export default function Register() {
     const [password, setPassword] = useState();
     const [cpassword, setCPassword] = useState();
 
+    const handleRegister = async () => {
+        try {
+            const response = await http.post('/auth/register', {
+                name,
+                email,
+                password,
+                password_confirmation: cpassword
+            });
+            console.log(response.data);
+            toast.success('Registered successfully. Please log in.');
+            navigate('/login');
+        } catch (error) {
+            if (error.response) {
+                console.error('Error response:', error.response);
+                toast.error(`Registration failed: ${error.response.data.error || error.response.data.message}`);
+            } else if (error.request) {
+                console.error('Error request:', error.request);
+                toast.error('Registration failed: No response from server.');
+            } else {
+                console.error('Error message:', error.message);
+                toast.error(`Registration failed: ${error.message}`);
+            }
+        }
+    };
+
     const submitForm = () => {
         console.log(email + ' ' + password);
         //api call
-        http.post('/auth/register', {name:name, email: email, password:password, password_confirmation:cpassword}).then((response)=>{
+        /* http.post('/auth/register', {name:name, email: email, password:password, password_confirmation:cpassword}).then((response)=>{
             console.log(response.data);
             navigate('/login');
-        })
+        }) */
+        handleRegister();
     }
 
     return (

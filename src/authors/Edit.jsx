@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import CustomButton from '../components/CustomButton';
 
 const Edit = ({ author, onSave, onClose }) => {
     const [formData, setFormData] = useState({
@@ -81,12 +82,12 @@ const Edit = ({ author, onSave, onClose }) => {
                         >
                             Cancel
                         </button>
-                        <button
+                        <CustomButton
                             type="submit"
                             className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700"
                         >
                             Save
-                        </button>
+                        </CustomButton>
                     </div>
                 </form>
             </div>

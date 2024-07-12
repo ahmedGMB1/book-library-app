@@ -3,8 +3,6 @@ import AuthService from '../AuthService';
 import { FaEdit, FaTrash, FaEye, FaSearch } from 'react-icons/fa';
 import CustomButton from '../components/CustomButton';
 import { toast } from 'react-toastify';
-import View from './View';
-import Edit from './Edit';
 
 const BooksIndex = () => {
   const { http } = AuthService();
@@ -23,41 +21,12 @@ const BooksIndex = () => {
 
   const fetchBooks = async () => {
     try {
-      let params = {
-        page: currentPage,
-        search: searchTerm
-      };
-
-      if (searchTerm !== '') {
-        console.log('searching...');
-        
-        const searchTerms = searchTerm.split(' ');
-        searchTerms.forEach(term => {
-          if (term.includes('@')) {
-            params.email = term;
-          } else if (!isNaN(term)) {
-            if (term.length === 4) { // Assuming 4 digits for year
-              params.year = term;
-            } else {
-              params.isbn = term;
-            }
-          } else if (term.toLowerCase().includes('publisher')) {
-            params.publisher = term.replace(/publisher\s?:?\s?/i, '');
-          } else {
-            if (!params.first_name) {
-              params.first_name = term;
-            } else if (!params.last_name) {
-              params.last_name = term;
-            } else {
-              params.title = term;
-            }
-          }
-        });
-
-        console.log(params);
-      }
-
-      const response = await http.get('/books', { params });
+      const response = await http.get('/books', {
+        params: {
+          page: currentPage,
+          search: searchTerm
+        }
+      });
       setBooks(response.data.data);
       setTotalPages(response.data.meta.last_page);
     } catch (error) {
@@ -146,7 +115,7 @@ const BooksIndex = () => {
             <div className="relative text-gray-600">
               <input
                 type="text"
-                placeholder="Search by title, author, publisher, ISBN, or year"
+                placeholder="Search by title or author"
                 className="border-2 border-gray-300 bg-white h-10 px-5 pr-10 rounded-lg text-sm focus:outline-none"
                 value={searchTerm}
                 onChange={handleSearch}

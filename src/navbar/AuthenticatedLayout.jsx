@@ -1,17 +1,13 @@
-import React, { Fragment } from 'react';
+import React, { Fragment, useState, useEffect } from 'react';
 import { Disclosure, Menu, Transition } from '@headlessui/react';
 import { Bars3Icon, BellIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { Routes, Route, Link } from 'react-router-dom';
 import Author from '../authors/Index';
-import Book from '../authors/Index';
+import Book from '../books/Index';
 import Dashboard from '../components/Dashboard';
 import AuthService from '../AuthService';
-
-const navigation = [
-  { name: 'Dashboard', href: '/dashboard', current: false },
-  { name: 'Authors', href: '/authors', current: false },
-  { name: 'Books', href: '/books', current: false },
-];
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ');
@@ -19,13 +15,51 @@ function classNames(...classes) {
 
 function AuthenticatedLayout() {
 
-  const {token, logout} = AuthService();
+  const { http, token, logout } = AuthService();
 
   const userLogout = () => {
     if (token != undefined) {
       logout();
     }
   }
+
+  const navigation = [
+    { name: 'Dashboard', href: '/dashboard', current: false },
+    { name: 'Authors', href: '/authors', current: false },
+    { name: 'Books', href: '/books', current: false },
+    { name: 'Logout', href: '/login', current: false, onClick: userLogout },
+  ];
+
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const getMe = async () => {
+      try {
+        const response = await http.post('/me');
+        console.log(response.data);
+        alert(response.data);
+      } catch (err) {
+        if (err.response) {
+          setError(err.response.status); // Set error status from response
+          console.error('Error response:', err.response);
+        } else if (err.request) {
+          console.error('Error request:', err.request);
+        } else {
+          console.error('Error message:', err.message);
+        }
+      }
+    };
+
+    getMe();
+  }, [http]); // Add http to dependency array to avoid potential issues
+
+  useEffect(() => {
+    if (error === 401) {
+      setError(null);
+      logout();
+      alert('Unauthorized: ' + error);
+    }
+  }, [error, logout]); // Add dependencies to the effect to avoid unnecessary calls
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -59,6 +93,7 @@ function AuthenticatedLayout() {
                         <Link
                           key={item.name}
                           to={item.href}
+                          onClick={item.onClick || null}
                           className={classNames(
                             item.current ? 'bg-gray-900 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white',
                             'rounded-md px-3 py-2 text-sm font-medium'
@@ -131,15 +166,16 @@ function AuthenticatedLayout() {
                         </Menu.Item>
                         <Menu.Item>
                           {({ active }) => (
-                            <button
-                            onClick={userLogout}
+                            <Link
+                              to="/login"
+                              onClick={userLogout}
                               className={classNames(
                                 active ? 'bg-gray-100' : '',
                                 'block px-4 py-2 text-sm text-gray-700'
                               )}
                             >
                               Logout
-                            </button>
+                            </Link>
                           )}
                         </Menu.Item>
                       </Menu.Items>
@@ -174,6 +210,7 @@ function AuthenticatedLayout() {
       </Disclosure>
 
       <main className="container mx-auto p-4">
+        <ToastContainer />
         <Routes>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/authors" element={<Author />} />

@@ -3,6 +3,8 @@ import AuthService from '../AuthService';
 import { FaEdit, FaTrash, FaSearch, FaEye } from 'react-icons/fa';
 import View from './View';
 import Edit from './Edit';
+import CustomButton from '../components/CustomButton';
+import { toast } from 'react-toastify';
 
 const Index = () => {
     const { http } = AuthService();
@@ -71,6 +73,7 @@ const Index = () => {
             }
         } catch (error) {
             console.error('Error fetching data:', error);
+            toast.error('Error fetching author.');
         }
     };
 
@@ -83,9 +86,11 @@ const Index = () => {
         if (window.confirm('Are you sure you want to delete this author?')) {
             try {
                 await http.delete(`/authors/${authorId}`);
+                toast.success('Author deleted successfully');
                 fetchAuthors();
             } catch (error) {
                 console.error('Error deleting author:', error);
+                toast.error('Error updating author.');
             }
         }
     };
@@ -106,40 +111,12 @@ const Index = () => {
             setIsEditing(false);
             setSelectedAuthor(null);
             fetchAuthors();
+            toast.success('Author updated successfully');
         } catch (error) {
             console.error('Error updating author:', error);
+            toast.error('Error updating author.');
         }
     };
-
-    /* const handleEdit = (author) => {
-        setSelectedAuthor(author);
-        setAuthorDetails({
-            first_name: author.first_name,
-            last_name: author.last_name,
-            email: author.email,
-            phone: author.phone,
-            bio: author.bio,
-        });
-        setIsEditing(true);
-    };
-
-    const handleSave = async () => {
-        try {
-            await http.put(`/authors/${selectedAuthor.id}`, authorDetails);
-            fetchAuthors();
-            setIsEditing(false);
-        } catch (error) {
-            console.error('Error updating author:', error);
-        }
-    };
-
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setAuthorDetails((prevDetails) => ({
-            ...prevDetails,
-            [name]: value,
-        }));
-    }; */
 
     const truncateBio = (bio) => {
         const words = bio.split(' ');
@@ -171,7 +148,7 @@ const Index = () => {
     const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
     function renderElement() {
-        if (authors.length >= 0) {
+        if (authors.length > 0) {
             return (
                 <div className="container mx-auto px-4 py-1">
                     <div className="flex justify-between items-center mb-4">
@@ -216,18 +193,18 @@ const Index = () => {
                                     </td>
                                     <td className="py-2 px-4 border-b text-center">{author.books.length}</td>
                                     <td className="py-2 px-4 border-b flex space-x-2">
-                                        <button
+                                        <CustomButton
                                             className="text-green-500 hover:text-green-700"
                                             onClick={() => handleView(author)}
                                         >
                                             <FaEye />
-                                        </button>
-                                        <button
+                                        </CustomButton>
+                                        <CustomButton
                                             className="text-blue-500 hover:text-blue-700"
                                             onClick={() => handleEdit(author)}
                                         >
                                             <FaEdit />
-                                        </button>
+                                        </CustomButton>
                                         <button
                                             className="text-red-500 hover:text-red-700"
                                             onClick={() => handleDelete(author.id)}

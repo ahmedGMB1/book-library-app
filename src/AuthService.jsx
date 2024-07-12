@@ -32,10 +32,14 @@ export default function AuthService() {
 
     const logout = () => {
         sessionStorage.clear();
-        navigate('/login');
+        navigate('/');
+        //navigate('/login');
     }
 
+    
     const API_URL = "http://127.0.0.1:8000/api/";
+    //const API_URL = import.meta.env.BOOK_LIBRARY_API_URL;
+
     //const API_URL = "https://book-author-api.softneedstack.online/api";
 
     const http = axios.create({
