@@ -5,6 +5,7 @@ import { Routes, Route, Link } from 'react-router-dom';
 import Home from '../components/Home';
 import Login from '../components/Login';
 import Register from '../components/Register';
+import { toast } from 'react-toastify';
 
 const navigation = [
     { name: 'Home', href: '/', current: false },
