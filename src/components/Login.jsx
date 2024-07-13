@@ -5,28 +5,24 @@ import { toast } from 'react-toastify';
 
 export default function Login() {
 
-    const { http, setToken } = AuthService();
+    const { api, setToken } = AuthService();
     const [email, setEmail] = useState();
     const [password, setPassword] = useState();
 
     const handleLogin = async () => {
         try {
-            const response = await http.post('/auth/login', { email: email, password: password });
+            const response = await api.post('/auth/login', { email: email, password: password });
             console.log(response.data);
             setToken(response.data.user, response.data.access_token);
             toast.success('Logged in successfully.');
         } catch (error) {
             if (error.response) {
-                // The request was made and the server responded with a status code
-                // that falls out of the range of 2xx
                 console.error('Error response:', error.response);
                 toast.error(`Login failed: ${error.response.data.error || error.response.data.message}`);
             } else if (error.request) {
-                // The request was made but no response was received
                 console.error('Error request:', error.request);
                 toast.error('Login failed: No response from server.');
             } else {
-                // Something happened in setting up the request that triggered an Error
                 console.error('Error message:', error.message);
                 toast.error(`Login failed: ${error.message}`);
             }
@@ -34,13 +30,6 @@ export default function Login() {
     };
 
     const submitForm = async () => {
-        //console.log(email + ' ' + password);
-        //api call
-        /* http.post('/auth/login', {email: email, password:password}).then((response)=>{
-            console.log(response.data);
-            setToken(response.data.user, response.data.access_token);
-            toast.success('Logged in successfully.');
-        }) */
         handleLogin();
     }
 

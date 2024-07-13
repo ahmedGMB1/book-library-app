@@ -3,39 +3,8 @@ import AuthService from "../AuthService";
 import { toast } from 'react-toastify';
 
 export default function Dashboard() {
-    /* const { http } = AuthService();
-    const [userDetail, setUserDetail] = useState(null);
-    const [numAuthors, setNumAuthors] = useState(0);
-    const [numBooks, setNumBooks] = useState(0);
-
-    useEffect(() => {
-        fetchUserDetail();
-        fetchNumberOfAuthors();
-        fetchNumberOfBooks();
-    }, []);
-
-    const fetchUserDetail = () => {
-        http.post('/me').then((response) => {
-            console.log(response.data);
-            setUserDetail(response.data);
-        });
-    };
-
-    const fetchNumberOfAuthors = () => {
-        // Replace with your API call to fetch number of authors
-        // Example: http.get('/authors/count')
-        const numAuthors = 10; // Replace with actual fetched data
-        setNumAuthors(numAuthors);
-    };
-
-    const fetchNumberOfBooks = () => {
-        // Replace with your API call to fetch number of books
-        // Example: http.get('/books/count')
-        const numBooks = 20; // Replace with actual fetched data
-        setNumBooks(numBooks);
-    }; */
-
-    const { http } = AuthService();
+    
+    const { api } = AuthService();
     const [userDetail, setUserDetail] = useState(null);
     const [numAuthors, setNumAuthors] = useState(0);
     const [numBooks, setNumBooks] = useState(0);
@@ -48,7 +17,7 @@ export default function Dashboard() {
 
     const fetchUserDetail = async () => {
         try {
-            const response = await http.post('/me');
+            const response = await api.post('/me');
             console.log(response.data);
             setUserDetail(response.data);
         } catch (error) {
@@ -59,10 +28,9 @@ export default function Dashboard() {
 
     const fetchNumberOfAuthors = async () => {
         try {
-            const response = await http.get('/authors'); // Adjust endpoint if necessary
-            const authors = response.data.meta.total; // Assuming response.data is the array of authors
+            const response = await api.get('/authors'); 
+            const authors = response.data.meta.total; 
             setNumAuthors(authors);
-            alert(authors);
         } catch (error) {
             console.error('Error fetching number of authors:', error);
             toast.error('Error fetching number of authors:', error);
@@ -71,45 +39,14 @@ export default function Dashboard() {
 
     const fetchNumberOfBooks = async () => {
         try {
-            const response = await http.get('/books'); // Adjust endpoint if necessary
-            const books = response.data.meta.total; // Assuming response.data is the array of books
+            const response = await api.get('/books'); 
+            const books = response.data.meta.total; 
             setNumBooks(books);
         } catch (error) {
             console.error('Error fetching number of books:', error);
             toast.error('Error fetching number of books:', error);
         }
     };
-
-    /* const fetchNumberOfAuthors = async () => {
-        try {
-            const response = await http.get('/authors');
-            console.log('Authors Response:', response.data); // Debugging log
-            const authors = response.data; // Assuming response.data is the array of authors
-            if (Array.isArray(authors)) {
-                setNumAuthors(authors.length);
-            } else {
-                console.error('Authors data is not an array:', authors);
-            }
-        } catch (error) {
-            console.error('Error fetching number of authors:', error);
-        }
-    };
-
-    const fetchNumberOfBooks = async () => {
-        try {
-            const response = await http.get('/books');
-            console.log('Books Response:', response.data); // Debugging log
-            const books = response.data; // Assuming response.data is the array of books
-            alert(response.data.meta.total);
-            if (Array.isArray(books)) {
-                setNumBooks(books.length);
-            } else {
-                console.error('Books data is not an array:', books);
-            }
-        } catch (error) {
-            console.error('Error fetching number of books:', error);
-        }
-    }; */
 
     function renderElement() {
         if (userDetail) {

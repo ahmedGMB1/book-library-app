@@ -1,41 +1,36 @@
 import React, { useEffect, useState } from 'react';
 import AuthService from '../AuthService';
-import { FaEdit, FaTrash, FaSearch, FaEye } from 'react-icons/fa';
+import { FaEdit, FaTrash, FaSearch, FaEye, FaPlus } from 'react-icons/fa';
 import View from './View';
 import Edit from './Edit';
+import Create from './Create';
 import CustomButton from '../components/CustomButton';
 import { toast } from 'react-toastify';
 
 const Index = () => {
-    const { http } = AuthService();
+    const { api } = AuthService();
     const [authors, setAuthors] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
-    const [authorsPerPage] = useState(5);
     const [totalPages, setTotalPages] = useState(0);
     const [selectedAuthor, setSelectedAuthor] = useState(null);
     const [isViewing, setIsViewing] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
-    const [authorDetails, setAuthorDetails] = useState({
-        firstName: '',
-        lastName: '',
-        email: '',
-        phone: '',
-        bio: ''
-    });
+    const [isCreating, setIsCreating] = useState(false);
 
     useEffect(() => {
         fetchAuthors();
-    }, [currentPage, searchTerm]); // Fetch authors when currentPage or searchTerm changes
+    }, [currentPage, searchTerm]);
 
     const hasNoNumeric = (str) => {
         return !/\d/.test(str);
     };
 
+    // Get Authors
     const fetchAuthors = async () => {
         console.log(searchTerm);
         try {
-            if (searchTerm !== '') { // Check if searchTerm is not empty
+            if (searchTerm !== '') {
                 console.log('searching...');
                 let params = {
                     page: currentPage,
@@ -58,12 +53,12 @@ const Index = () => {
                 }
 
                 console.log(params);
-                const response = await http.get('/author/search', { params });
+                const response = await api.get('/author/search', { params });
                 setAuthors(response.data.data);
                 setTotalPages(response.data.meta.last_page);
             } else {
                 console.log('fetching...');
-                const response = await http.get('/authors', {
+                const response = await api.get('/authors', {
                     params: {
                         page: currentPage,
                     }
@@ -79,13 +74,14 @@ const Index = () => {
 
     const handleSearch = (e) => {
         setSearchTerm(e.target.value);
-        setCurrentPage(1); // Reset to first page when search term changes
+        // Reset to first page when search term changes
+        setCurrentPage(1);
     };
 
     const handleDelete = async (authorId) => {
         if (window.confirm('Are you sure you want to delete this author?')) {
             try {
-                await http.delete(`/authors/${authorId}`);
+                await api.delete(`/authors/${authorId}`);
                 toast.success('Author deleted successfully');
                 fetchAuthors();
             } catch (error) {
@@ -105,9 +101,25 @@ const Index = () => {
         setIsEditing(true);
     };
 
-    const handleSave = async (updatedAuthor) => {
+    const handleCreateAuthor = () => {
+        setIsCreating(true);
+    };
+
+    const handleCreateSave = async (newBook) => {
         try {
-            await http.put(`/authors/${updatedAuthor.id}`, updatedAuthor);
+            await api.post('/authors', newBook);
+            setIsCreating(false);
+            fetchAuthors();
+            toast.success('Author added successfully');
+        } catch (error) {
+            console.error('Error creating author:', error);
+            toast.error('Error creating author.');
+        }
+    };
+
+    const handleSaveEdit = async (updatedAuthor) => {
+        try {
+            await api.put(`/authors/${updatedAuthor.id}`, updatedAuthor);
             setIsEditing(false);
             setSelectedAuthor(null);
             fetchAuthors();
@@ -118,17 +130,9 @@ const Index = () => {
         }
     };
 
-    const truncateBio = (bio) => {
-        const words = bio.split(' ');
-        const maxLength = 8; // Maximum words for truncated bio
-        if (words.length > maxLength) {
-            return `${words.slice(0, maxLength).join(' ')} ... `;
-        }
-        return bio;
-    };
-
     const renderBioWithReadMore = (bio) => {
-        const maxLength = 8; // Maximum words for truncated bio
+        // Maximum words for truncated bio
+        const maxLength = 8;
         const words = bio.split(' ');
         if (words.length <= maxLength) {
             return bio;
@@ -137,9 +141,9 @@ const Index = () => {
             return (
                 <>
                     {truncatedBio}{' '}
-                    <a href="#" onClick={() => handleEdit(author)} className="text-blue-500 hover:underline">
-                        Read more
-                    </a>
+                    <span className="text-gray-500 hover:underline">
+                        ...
+                    </span>
                 </>
             );
         }
@@ -148,16 +152,22 @@ const Index = () => {
     const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
     function renderElement() {
-        if (authors.length > 0) {
+        if (authors.length >= 0) {
             return (
                 <div className="container mx-auto px-4 py-1">
                     <div className="flex justify-between items-center mb-4">
                         <h1 className="text-2xl font-bold">Author List</h1>
-
-                        <div className="relative text-gray-600">
+                        <div className="flex space-x-2">
+                            <CustomButton
+                                onClick={handleCreateAuthor}
+                                className="bg-green-500 text-white px-4 py-2 rounded flex items-center justify-center space-x-2 hover:bg-green-700"
+                            >
+                                <FaPlus />
+                                <span>Add Author</span>
+                            </CustomButton>
                             <input
                                 type="text"
-                                placeholder="Search by name, email or phone"
+                                placeholder="Search by Name, Email or Phone"
                                 className="border-2 border-gray-300 bg-white h-10 px-5 pr-10 rounded-lg text-sm focus:outline-none"
                                 value={searchTerm}
                                 onChange={handleSearch}
@@ -167,6 +177,7 @@ const Index = () => {
                             </button>
                         </div>
                     </div>
+
                     <table className="min-w-full bg-white border border-gray-200">
                         <thead>
                             <tr>
@@ -241,8 +252,14 @@ const Index = () => {
                     {isEditing && (
                         <Edit
                             author={selectedAuthor}
-                            onSave={handleSave}
+                            onSave={handleSaveEdit}
                             onClose={() => setIsEditing(false)}
+                        />
+                    )}
+                    {isCreating && (
+                        <Create
+                            onCreate={handleCreateSave}
+                            onClose={() => setIsCreating(false)}
                         />
                     )}
                 </div>

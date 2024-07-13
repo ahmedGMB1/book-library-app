@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import CustomButton from '../components/CustomButton';
+import { FaTimes } from 'react-icons/fa';
 
 const Edit = ({ author, onSave, onClose }) => {
     const [formData, setFormData] = useState({
@@ -23,7 +24,12 @@ const Edit = ({ author, onSave, onClose }) => {
     return (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-75 flex justify-center items-center">
             <div className="bg-white p-4 rounded-lg shadow-lg w-1/2">
-                <h2 className="text-2xl font-bold mb-4">Edit Author</h2>
+                <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-2xl font-bold">Edit Author</h2>
+                    <CustomButton onClick={onClose} className="text-gray-500 hover:text-gray-700">
+                        <FaTimes />
+                    </CustomButton>
+                </div>
                 <form onSubmit={handleSubmit}>
                     <label>
                         First Name:

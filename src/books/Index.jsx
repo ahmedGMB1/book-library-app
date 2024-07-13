@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import AuthService from '../AuthService';
-import { FaEdit, FaTrash, FaEye, FaSearch } from 'react-icons/fa';
+import { FaEdit, FaTrash, FaEye, FaSearch, FaPlus } from 'react-icons/fa';
 import CustomButton from '../components/CustomButton';
 import { toast } from 'react-toastify';
 import View from './View';
 import Edit from './Edit';
+import Create from './Create';
 
-const BooksIndex = () => {
-  const { http } = AuthService();
+const Index = () => {
+  const { api } = AuthService();
   const [books, setBooks] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -16,50 +17,34 @@ const BooksIndex = () => {
   const [selectedBook, setSelectedBook] = useState(null);
   const [isViewing, setIsViewing] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
 
   useEffect(() => {
     fetchBooks();
-  }, [currentPage, searchTerm]); // Fetch books when currentPage or searchTerm changes
+  }, [currentPage, searchTerm]);
 
   const fetchBooks = async () => {
     try {
-      let params = {
-        page: currentPage,
-        search: searchTerm
-      };
+      let params = { page: currentPage };
 
       if (searchTerm !== '') {
-        console.log('searching...');
-        
-        const searchTerms = searchTerm.split(' ');
-        searchTerms.forEach(term => {
-          if (term.includes('@')) {
-            params.email = term;
-          } else if (!isNaN(term)) {
-            if (term.length === 4) { // Assuming 4 digits for year
-              params.year = term;
-            } else {
-              params.isbn = term;
-            }
-          } else if (term.toLowerCase().includes('publisher')) {
-            params.publisher = term.replace(/publisher\s?:?\s?/i, '');
-          } else {
-            if (!params.first_name) {
-              params.first_name = term;
-            } else if (!params.last_name) {
-              params.last_name = term;
-            } else {
-              params.title = term;
-            }
-          }
-        });
-
-        console.log(params);
+        if (!isNaN(searchTerm) && searchTerm.length > 4) {
+          params.isbn = searchTerm;
+        } else if (searchTerm.length === 4 && !isNaN(searchTerm)) {
+          params.year = searchTerm;
+        } else if (searchTerm.toLowerCase().includes('publisher')) {
+          params.publisher = searchTerm.replace(/publisher\s?:?\s?/i, '');
+        } else {
+          params.title = searchTerm;
+        }
+        const response = await api.get('/book/search', { params });
+        setBooks(response.data.data);
+        setTotalPages(response.data.meta.last_page);
+      } else {
+        const response = await api.get('/books', { params });
+        setBooks(response.data.data);
+        setTotalPages(response.data.meta.last_page);
       }
-
-      const response = await http.get('/books', { params });
-      setBooks(response.data.data);
-      setTotalPages(response.data.meta.last_page);
     } catch (error) {
       console.error('Error fetching data:', error);
       toast.error('Error fetching books.');
@@ -68,13 +53,13 @@ const BooksIndex = () => {
 
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
-    setCurrentPage(1); // Reset to first page when search term changes
+    setCurrentPage(1);
   };
 
   const handleDelete = async (bookId) => {
     if (window.confirm('Are you sure you want to delete this book?')) {
       try {
-        await http.delete(`/books/${bookId}`);
+        await api.delete(`/books/${bookId}`);
         toast.success('Book deleted successfully');
         fetchBooks();
       } catch (error) {
@@ -94,9 +79,13 @@ const BooksIndex = () => {
     setIsEditing(true);
   };
 
+  const handleCreate = () => {
+    setIsCreating(true);
+  };
+
   const handleSave = async (updatedBook) => {
     try {
-      await http.put(`/books/${updatedBook.id}`, updatedBook);
+      await api.put(`/books/${updatedBook.id}`, updatedBook);
       setIsEditing(false);
       setSelectedBook(null);
       fetchBooks();
@@ -107,9 +96,21 @@ const BooksIndex = () => {
     }
   };
 
+  const handleCreateSave = async (newBook) => {
+    try {
+      await api.post('/books', newBook);
+      setIsCreating(false);
+      fetchBooks();
+      toast.success('Book added successfully');
+    } catch (error) {
+      console.error('Error creating book:', error);
+      toast.error('Error creating book.');
+    }
+  };
+
   const truncateSummary = (summary) => {
     const words = summary.split(' ');
-    const maxLength = 8; // Maximum words for truncated summary
+    const maxLength = 8;
     if (words.length > maxLength) {
       return `${words.slice(0, maxLength).join(' ')} ... `;
     }
@@ -117,7 +118,7 @@ const BooksIndex = () => {
   };
 
   const renderDescriptionWithReadMore = (summary) => {
-    const maxLength = 8; // Maximum words for truncated summary
+    const maxLength = 8;
     const words = summary.split(' ');
     if (words.length <= maxLength) {
       return summary;
@@ -126,9 +127,7 @@ const BooksIndex = () => {
       return (
         <>
           {truncatedDescription}{' '}
-          <a href="#" onClick={() => handleView(selectedBook)} className="text-blue-500 hover:underline">
-            Read more
-          </a>
+          <span className="text-gray-500 hover:underline">... Read more</span>
         </>
       );
     }
@@ -137,23 +136,31 @@ const BooksIndex = () => {
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   const renderElement = () => {
-    if (books.length > 0) {
+    if (books.length >= 0) {
       return (
         <div className="container mx-auto px-4 py-1">
           <div className="flex justify-between items-center mb-4">
             <h1 className="text-2xl font-bold">Book List</h1>
-
-            <div className="relative text-gray-600">
-              <input
-                type="text"
-                placeholder="Search by title, author, publisher, ISBN, or year"
-                className="border-2 border-gray-300 bg-white h-10 px-5 pr-10 rounded-lg text-sm focus:outline-none"
-                value={searchTerm}
-                onChange={handleSearch}
-              />
-              <button type="submit" className="absolute right-0 top-0 mt-2 mr-4">
-                <FaSearch />
-              </button>
+            <div className="flex space-x-2">
+              <CustomButton
+                onClick={handleCreate}
+                className="bg-green-500 text-white px-4 py-2 rounded flex items-center justify-center space-x-2 hover:bg-green-700"
+              >
+                <FaPlus />
+                <span>Add Book</span>
+              </CustomButton>
+              <div className="relative text-gray-600">
+                <input
+                  type="text"
+                  placeholder="Search by Title, ISBN, Year or Publisher"
+                  className="border-2 border-gray-300 bg-white h-10 px-5 pr-10 rounded-lg text-sm focus:outline-none"
+                  value={searchTerm}
+                  onChange={handleSearch}
+                />
+                <button type="submit" className="absolute right-0 top-0 mt-2 mr-4">
+                  <FaSearch />
+                </button>
+              </div>
             </div>
           </div>
           <div className="grid grid-cols-4 gap-4">
@@ -163,6 +170,8 @@ const BooksIndex = () => {
                 <h2 className="text-lg font-bold">{book.title}</h2>
                 <p className="text-sm text-gray-700"><strong>Author:</strong> {book.author.firstName} {book.author.lastName}</p>
                 <p className="text-sm text-gray-700"><strong>Publisher:</strong> {book.publisher}</p>
+                <p className="text-sm text-gray-700"><strong>ISBN:</strong> {book.isbn}</p>
+                <p className="text-sm text-gray-700"><strong>Year:</strong> {book.year}</p>
                 <p className="text-sm text-gray-700">
                   {renderDescriptionWithReadMore(book.summary)}
                 </p>
@@ -218,14 +227,20 @@ const BooksIndex = () => {
               onClose={() => setIsEditing(false)}
             />
           )}
+          {isCreating && (
+            <Create
+              onCreate={handleCreateSave}
+              onClose={() => setIsCreating(false)}
+            />
+          )}
         </div>
       );
     } else {
       return <p className="text-center mt-8">Loading... Please wait...</p>;
     }
-  }
+  };
 
-  return renderElement();
+  return <div>{renderElement()}</div>;
 };
 
-export default BooksIndex;
+export default Index;

@@ -11,7 +11,7 @@ export default function AuthService() {
         const userToken = JSON.parse(tokenString);
         return userToken;
     }
-    
+
     const getUser = () => {
         const userString = sessionStorage.getItem('user');
         const userDetail = JSON.parse(userString);
@@ -33,20 +33,15 @@ export default function AuthService() {
     const logout = () => {
         sessionStorage.clear();
         navigate('/');
-        //navigate('/login');
     }
 
-    
-    const API_URL = "http://127.0.0.1:8000/api/";
-    //const API_URL = import.meta.env.BOOK_LIBRARY_API_URL;
+    const API_URL = import.meta.env.VITE_API_BASE_URL;
 
-    //const API_URL = "https://book-author-api.softneedstack.online/api";
-
-    const http = axios.create({
-        baseURL:API_URL,
-        headers:{
-            "Content-Type":"application/json",
-            "Authorization":`Bearer ${token}`
+    const api = axios.create({
+        baseURL: API_URL,
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
         }
     });
     return {
@@ -54,7 +49,7 @@ export default function AuthService() {
         token,
         user,
         getToken,
-        http,
+        api,
         logout
     }
 }

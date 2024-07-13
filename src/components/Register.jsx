@@ -6,7 +6,7 @@ import { toast } from 'react-toastify';
 export default function Register() {
 
     const navigate = useNavigate();
-    const { http, setToken } = AuthService();
+    const { api } = AuthService();
     const [name, setName] = useState();
     const [email, setEmail] = useState();
     const [password, setPassword] = useState();
@@ -14,7 +14,7 @@ export default function Register() {
 
     const handleRegister = async () => {
         try {
-            const response = await http.post('/auth/register', {
+            const response = await api.post('/auth/register', {
                 name,
                 email,
                 password,
@@ -38,12 +38,6 @@ export default function Register() {
     };
 
     const submitForm = () => {
-        console.log(email + ' ' + password);
-        //api call
-        /* http.post('/auth/register', {name:name, email: email, password:password, password_confirmation:cpassword}).then((response)=>{
-            console.log(response.data);
-            navigate('/login');
-        }) */
         handleRegister();
     }
 

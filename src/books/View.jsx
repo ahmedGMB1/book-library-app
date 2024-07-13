@@ -8,7 +8,7 @@ const View = ({ book, onClose }) => {
       <div className="bg-white rounded-lg p-8 w-3/4 max-w-2xl">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-2xl font-bold">{book.title}</h2>
-          <CustomButton onClick={onClose} className="text-red-500 hover:text-red-700">
+          <CustomButton onClick={onClose} className="text-gray-500 hover:text-gray-700">
             <FaTimes />
           </CustomButton>
         </div>
@@ -16,6 +16,7 @@ const View = ({ book, onClose }) => {
           <img src={book.coverImage} alt="Cover" className="w-full h-48 object-cover rounded mb-2" />
           <p><strong>Author:</strong> {book.author.firstName} {book.author.lastName}</p>
           <p><strong>Publisher:</strong> {book.publisher}</p>
+          <p><strong>Cover Image URL:</strong> {book.coverImage}</p>
           <p><strong>ISBN:</strong> {book.isbn}</p>
           <p><strong>Year:</strong> {book.year}</p>
           <p><strong>Summary:</strong> {book.summary}</p>

@@ -15,7 +15,7 @@ function classNames(...classes) {
 
 function AuthenticatedLayout() {
 
-  const { http, token, logout } = AuthService();
+  const { api, token, logout } = AuthService();
 
   const userLogout = () => {
     if (token != undefined) {
@@ -35,12 +35,11 @@ function AuthenticatedLayout() {
   useEffect(() => {
     const getMe = async () => {
       try {
-        const response = await http.post('/me');
+        const response = await api.post('/me');
         console.log(response.data);
-        alert(response.data);
       } catch (err) {
         if (err.response) {
-          setError(err.response.status); // Set error status from response
+          setError(err.response.status);
           console.error('Error response:', err.response);
         } else if (err.request) {
           console.error('Error request:', err.request);
@@ -51,15 +50,14 @@ function AuthenticatedLayout() {
     };
 
     getMe();
-  }, [http]); // Add http to dependency array to avoid potential issues
+  }, [api]);
 
   useEffect(() => {
     if (error === 401) {
       setError(null);
       logout();
-      alert('Unauthorized: ' + error);
     }
-  }, [error, logout]); // Add dependencies to the effect to avoid unnecessary calls
+  }, [error, logout]);
 
   return (
     <div className="min-h-screen bg-gray-100">
