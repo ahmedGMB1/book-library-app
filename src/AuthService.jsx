@@ -35,7 +35,8 @@ export default function AuthService() {
         navigate('/');
     }
 
-    const API_URL = import.meta.env.VITE_API_BASE_URL;
+    //const API_URL = import.meta.env.VITE_API_BASE_URL;
+    const API_URL = 'https://book-author-api.softneedstack.online/api';
 
     const api = axios.create({
         baseURL: API_URL,
